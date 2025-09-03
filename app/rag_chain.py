@@ -1,11 +1,11 @@
 import os
 from typing import Dict, Any
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableMap
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # System prompt template that defines the AI assistant's behavior
 PROMPT = ChatPromptTemplate.from_template("""
