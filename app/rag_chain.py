@@ -5,7 +5,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableMap
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 # System prompt template that defines the AI assistant's behavior
 PROMPT = ChatPromptTemplate.from_template("""

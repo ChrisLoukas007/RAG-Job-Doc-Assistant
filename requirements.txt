@@ -12,3 +12,6 @@ scikit-learn
 httpx
 tenacity
 tqdm
+langchain-huggingface
+sentence-transformers
+transformers
