@@ -46,6 +46,10 @@ class FeedbackIn(BaseModel):
 
 # === API ENDPOINTS ===
 
+@app.get("/")
+def home():
+    return {"msg": "RAG Helpdesk API. See /docs or /health."}
+
 @app.get("/health")
 def health():
     """
