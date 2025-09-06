@@ -8,7 +8,7 @@ EMB = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 def cos(a, b): return float(cosine_similarity(a, b)[0,0])
 
 async def ask(q):
-    async with httpx.AsyncClient() as c:
+    async with httpx.AsyncClient(timeout=60.0) as c:
         r = await c.post("http://localhost:8000/query", json={"question": q})
         r.raise_for_status()
         return r.json()["answer"]
