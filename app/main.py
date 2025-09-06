@@ -4,6 +4,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from .rag_chain import make_chain
+import re
+import time
+from pathlib import Path
+from typing import List, Any
+from fastapi import HTTPException
 
 # Load environment variables from .env file at startup
 load_dotenv()
@@ -58,41 +63,86 @@ def health():
     """
     return {"status": "ok"}
 
+import re
+from pathlib import Path
+
+BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
+
+def coerce_to_text(resp: Any) -> str:
+    """Turn various LangChain/LLM outputs into a plain string."""
+    # LangChain message types
+    try:
+        from langchain_core.messages import BaseMessage  # type: ignore
+        if isinstance(resp, BaseMessage):
+            return str(resp.content or "")
+    except Exception:
+        pass
+
+    # Already a string?
+    if isinstance(resp, str):
+        return resp
+
+    # Some models return dicts with content/text/answer fields
+    if isinstance(resp, dict):
+        if isinstance(resp.get("content"), str):
+            return resp["content"]
+        if "text" in resp:
+            return str(resp["text"])
+        if "answer" in resp:
+            return str(resp["answer"])
+        return str(resp)
+
+    # Some return a list[dict|str] parts
+    if isinstance(resp, list):
+        parts: List[str] = []
+        for x in resp:
+            if isinstance(x, str):
+                parts.append(x)
+            elif isinstance(x, dict):
+                t = x.get("text") or x.get("content") or x.get("answer") or ""
+                parts.append(str(t))
+        return "\n".join(parts)
+
+    # Fallback
+    return str(resp)
+
 @app.post("/query", response_model=RAGOut)
 async def query(payload: QueryIn):
-    """
-    Main RAG endpoint - answer user questions using the knowledge base
-    """
-    # Start timing for latency measurement
     t0 = time.time()
-    
     try:
-        # Invoke the RAG chain asynchronously for better performance
-        resp = await chain.ainvoke(payload.question)
-        
-        # Extract answer text from LLM response (different LLMs return different formats)
-        answer = resp.content if hasattr(resp, "content") else str(resp)
-        
-        # Ensure answer is always a string (defensive programming)
-        if not isinstance(answer, str):
-            answer = str(answer)
-        
-        # Parse sources from the answer (assumes sources are bullet points starting with "- ")
-        sources = [
-            line.replace("- ", "").strip() 
-            for line in answer.splitlines() 
-            if line.strip().startswith("- ")
-        ]
-        
-        # Return structured response with timing information
+        # 1) Ask the chain
+        raw = await chain.ainvoke(payload.question)
+        answer_text: str = coerce_to_text(raw)
+
+        # 2) Parse sources from the answer (accept '-' or '*')
+        parsed: List[str] = []
+        for line in answer_text.splitlines():
+            m = BULLET_RE.match(line)
+            if m:
+                parsed.append(m.group(1).strip())
+
+        # 3) Fallback: filenames from retriever if nothing parsed
+        if not parsed:
+            docs = await retriever.aget_relevant_documents(payload.question)
+            for d in docs:
+                src = d.metadata.get("source", "unknown")
+                parsed.append(Path(src).name)
+
+        # 4) Deduplicate while preserving order
+        seen = set()
+        sources: List[str] = []
+        for s in parsed:
+            if s not in seen and s:
+                seen.add(s)
+                # keep only filename if a path sneaks in
+                sources.append(Path(s).name)
+
         return RAGOut(
-            answer=answer, 
-            sources=sources, 
-            latency_ms=(time.time() - t0) * 1000  # Convert to milliseconds
+            answer=answer_text,
+            sources=sources,
+            latency_ms=(time.time() - t0) * 1000.0,
         )
-        
     except Exception as e:
-        # Convert any error to HTTP 500 with error details
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/feedback")

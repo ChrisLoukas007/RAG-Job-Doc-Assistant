@@ -1,0 +1,10 @@
+{"question":"What is RAG in one sentence?","answer":"RAG retrieves relevant chunks from your documents and asks an LLM to answer using only those chunks, with citations."}
+{"question":"Where are FastAPI interactive docs?","answer":"At the /docs route, which serves a Swagger UI for trying endpoints."}
+{"question":"What does the /upload endpoint do?","answer":"It accepts a PDF file, extracts its text, splits it into chunks, and stores them in a vector database."}
+{"question":"What is the purpose of the /ask endpoint?","answer":"It takes a user question, retrieves relevant document chunks from the vector database, and generates an answer using an LLM."}
+{"question":"How are documents processed before being stored?","answer":"Text is extracted from PDFs, split into chunks with overlap, and then embedded into vectors for storage in a vector database."}
+{"question":"What libraries are used for PDF text extraction and chunking?","answer":"PyMuPDF (fitz) is used for PDF text extraction, and LangChain's RecursiveCharacterTextSplitter is used for chunking."}
+{"question":"What environment variables are required for this application?","answer":"OPENAI_API_KEY for OpenAI access and PINECONE_API_KEY and PINECONE_ENVIRONMENT for Pinecone vector database access."}
+{"question":"How does the application ensure that answers are based on document content?","answer":"By retrieving relevant chunks from the vector database and using them as context for the LLM to generate answers."}
+{"question":"What happens if no relevant documents are found for a question?","answer":"The application raises an HTTP 404 error indicating no relevant documents were found."}
+{"question":"How can you test the API endpoints?","answer":"By running the FastAPI server and accessing the interactive docs at /docs to try out the /upload and /ask endpoints."}

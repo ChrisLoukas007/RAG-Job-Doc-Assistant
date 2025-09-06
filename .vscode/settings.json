@@ -1,4 +1,6 @@
 {
   "python.defaultInterpreterPath": "/Users/chrisloukasntais/VsCode/RAG-Job-Doc-Assistant-venv/bin/python",
-  "python.terminal.activateEnvironment": true
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.extraPaths": [],
+  "python.analysis.indexing": true
 }
