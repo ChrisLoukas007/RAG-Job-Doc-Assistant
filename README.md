@@ -1,26 +1,25 @@
-# RAG-Job-Doc-Assistant
-A compact Retrieval-Augmented Generation service: ingest your PDFs/notes → ask questions → get grounded answers with sources.
+# 🧑‍💻 RAG Helpdesk Assistant
 
-## Features
-- LangChain LCEL pipeline (retriever + prompt + LLM)
-- FAISS vector index (local, fast)
-- Pluggable LLM (Ollama or OpenAI)
-- FastAPI endpoints: `/health`, `/ingest`, `/query`, `/feedback`
-- Dockerized, with optional Ollama via docker-compose
-- Basic eval script (semantic similarity)
+A **Retrieval-Augmented Generation (RAG)** application designed to answer questions grounded in a custom knowledge base.  
 
-## Quickstart
-1. `pip install -r requirements.txt`
-2. Put docs into `data/raw/`
-3. `python -m app.ingest`
-4. `uvicorn app.main:app --reload`
-5. `POST /query {"question": "..."}`
+This project showcases how to build a modern AI microservice using:
 
-## Env
-See `.env.example`.
+- **LangChain** for chaining retrieval + LLM orchestration
+- **FastAPI** for serving APIs
+- **Hugging Face embeddings (MiniLM)** + **FAISS** vector database
+- **Pluggable LLM providers**: [Ollama](https://ollama.ai) (local models) or OpenAI
+- **Docker** for reproducible deployment
+- **Evaluation** with semantic similarity metrics
 
-## Swap vector DB
-Use FAISS by default. For Qdrant: run a qdrant container and switch vector store code (PR welcome).
+It demonstrates the **end-to-end workflow** of a RAG pipeline: ingesting raw documents → building embeddings → querying with context → serving results through an API.
 
-## License
-MIT
+---
+
+## ✨ Features
+
+- 📂 **Document ingestion**: Process Markdown, TXT, or PDF docs into embeddings.
+- 🔎 **Vector retrieval**: Use FAISS for efficient similarity search.
+- 🤖 **Grounded answers**: Combine retrieved chunks with an LLM to reduce hallucinations.
+- 📑 **Source attribution**: Return answers *with linked sources*.
+- 🐳 **Portable deployment**: Run locally or with Docker in one command.
+- 🧪 **Evaluation pipeline**: Compare predictions against gold answers using semantic similarity.
