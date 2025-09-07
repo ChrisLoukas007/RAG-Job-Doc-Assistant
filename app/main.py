@@ -3,12 +3,15 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from .rag_chain import make_chain
+from .rag_chain import make_chain, stream_chain_answer
 import re
 import time
 from pathlib import Path
 from typing import List, Any
 from fastapi import HTTPException
+
+# we’ll return a streaming response for SSE
+from fastapi.responses import StreamingResponse
 
 # Load environment variables from .env file at startup
 load_dotenv()
@@ -144,6 +147,43 @@ async def query(payload: QueryIn):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+# ======================================
+# Streaming endpoint using SSE
+# ======================================
+@app.post("/stream")
+async def stream(payload: QueryIn):
+    """
+    Stream the answer as Server-Sent Events (SSE).
+
+    Protocol:
+      - Each message is 'data: <json>\\n\\n'
+      - We send { "token": "<piece>" } for each incremental chunk
+      - We finish with an explicit 'done' event
+    """
+    async def event_source():
+        try:
+            # Forward every token piece as an SSE message 
+            async for piece in stream_chain_answer(chain, payload.question):
+                # JSON-encode the token to be safe with newlines/quotes
+                yield f"data: {json.dumps({'token': piece})}\n\n"
+            # Signal completion explicitly
+            yield "event: done\ndata: {}\n\n"
+        except Exception as e:
+            # Surface the error as an SSE 'error' event
+            yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
+
+    # NOTE: 'text/event-stream' keeps the connection open and flushes chunks
+    return StreamingResponse(
+        event_source(),
+        media_type="text/event-stream",
+        headers={
+            # Helpful for proxies and browsers to avoid buffering/caching
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # nginx: disable response buffering
+            "Connection": "keep-alive",
+        },
+    )
 
 @app.post("/feedback")
 def feedback(fb: FeedbackIn):

@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any
+from typing import Dict, Any, AsyncIterator
 
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -7,6 +7,10 @@ from langchain_core.runnables import RunnablePassthrough, RunnableMap
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from langchain_huggingface import HuggingFaceEmbeddings
+
+# NEW: we’ll stream using the LCEL event API
+from langchain_core.messages import BaseMessage
+
 
 # System prompt template that defines the AI assistant's behavior
 PROMPT = ChatPromptTemplate.from_template("""
@@ -86,3 +90,32 @@ def make_chain(index_dir: str, embedding_model: str, llm_provider: str):
     
     # Return both chain and retriever for flexibility
     return chain, retriever
+
+# ===========================
+# streaming async generator
+# ===========================
+async def stream_chain_answer(chain, question: str) -> AsyncIterator[str]:
+    """
+    Stream the model's answer token-by-token.
+
+    How it works:
+    - `chain.astream_events(..., version="v1")` emits many events while the chain runs.
+    - When the LLM sends a token, we receive an `on_chat_model_stream` event.
+    - We extract `chunk.content` (the new text delta) and yield it immediately.
+    """
+    # Start the chain with the question and get events one by one
+    async for event in chain.astream_events(question, version="v1"):
+        
+        # Check if this event is about the AI generating text
+        if event["event"] == "on_chat_model_stream":
+            
+            # Get the data part that contains the new text piece
+            chunk = event["data"]["chunk"]
+            
+            # Safely get the text content (or empty string if none)
+            piece = getattr(chunk, "content", "") or ""
+            
+            # Only send back the text if it's not empty
+            if piece:
+                # Send this text piece to whoever called this function
+                yield piece
