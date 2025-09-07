@@ -82,7 +82,7 @@ def coerce_to_text(resp: Any) -> str:
     if isinstance(resp, str):
         return resp
 
-    # Some models return dicts with content/text/answer fields
+    # If it’s a dictionary, then we try content or text or answer keys 
     if isinstance(resp, dict):
         if isinstance(resp.get("content"), str):
             return resp["content"]
@@ -92,7 +92,7 @@ def coerce_to_text(resp: Any) -> str:
             return str(resp["answer"])
         return str(resp)
 
-    # Some return a list[dict|str] parts
+    # If it’s a list, we join text parts intelligently
     if isinstance(resp, list):
         parts: List[str] = []
         for x in resp:

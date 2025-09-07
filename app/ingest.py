@@ -1,10 +1,11 @@
 from pathlib import Path  # Easy way to work with file paths
+
 from langchain_community.document_loaders import PyPDFLoader, TextLoader  # Tools to read PDF and text files
 from langchain.text_splitter import RecursiveCharacterTextSplitter  # Breaks documents into chunks
 from langchain_community.embeddings import HuggingFaceEmbeddings  # Converts text to numbers (vectors)
 from langchain_community.vectorstores import FAISS  # Database for storing and searching vectors
+
 import os  # Access environment variables
-import os
 
 def build_index(raw_dir: str, index_dir: str, embedding_model: str):
     """

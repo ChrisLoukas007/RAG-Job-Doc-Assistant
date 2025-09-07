@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Any
+
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableMap
@@ -71,7 +72,7 @@ def make_chain(index_dir: str, embedding_model: str, llm_provider: str):
             base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
         )
     
-    # Build the RAG chain pipeline using RunnableMap for better structure:
+    # Build the RAG chain pipeline where the LangChain pipeline philosophy kicks in 
     # 1. RunnableMap: Take user input and retrieve relevant docs in parallel
     # 2. combine_context: Format docs into context string with question
     # 3. PROMPT: Apply template to create final prompt
