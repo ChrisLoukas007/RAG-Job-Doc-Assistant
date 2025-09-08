@@ -9,6 +9,7 @@ from langchain_core.runnables import RunnablePassthrough, RunnableMap
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from langchain_huggingface import HuggingFaceEmbeddings  # text to vector converter 
+from langchain_core.output_parsers import StrOutputParser # for parsing AI output
 
 # for handling AI responses
 from langchain_core.messages import BaseMessage
@@ -75,14 +76,18 @@ def make_chain(index_dir: str, embedding_model: str, llm_provider: str):
     # Step 3: Choose which AI brain to use
     if llm_provider == "openai":
         # Use OpenAI's GPT models (requires API key in environment)
-        llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+        llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0)
     else:
         # Use local Ollama models (requires Ollama server running)
         llm = ChatOllama(
             model=os.getenv("OLLAMA_MODEL", "llama3.1:8b"),
             base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),  # Where Ollama is running
+            temperature=0,          # Consistent answers
+            num_predict=512,        # Reasonable length
+            top_p=0.9,             # Focused but natural
+            repeat_penalty=1.1,     # No repetition
         )
-    
+
     # Step 4: Build the complete pipeline
     chain = (
         # 1: Take user input and search for relevant docs in parallel
@@ -96,6 +101,7 @@ def make_chain(index_dir: str, embedding_model: str, llm_provider: str):
         | PROMPT
         # 4: Let the AI generate the final answer
         | llm
+        | StrOutputParser()  # Ensure output is plain text
     )
     
     # Return both the complete chain and the searcher
