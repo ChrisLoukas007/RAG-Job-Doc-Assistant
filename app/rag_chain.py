@@ -11,7 +11,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 # NEW: we’ll stream using the LCEL event API
 from langchain_core.messages import BaseMessage
 
-
 # System prompt template that defines the AI assistant's behavior
 PROMPT = ChatPromptTemplate.from_template("""
 You are a concise AI helpdesk agent. Use ONLY the provided context to answer.
