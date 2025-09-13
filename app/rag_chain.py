@@ -81,7 +81,7 @@ def make_chain(index_dir: str, embedding_model: str, llm_provider: str):
         # Use local Ollama models (requires Ollama server running)
         llm = ChatOllama(
             model=os.getenv("OLLAMA_MODEL", "llama3.1:8b"),
-            base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),  # Where Ollama is running
+            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),  # Where Ollama is running
             temperature=0,          # Consistent answers
             num_predict=512,        # Reasonable length
             top_p=0.9,             # Focused but natural
