@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ask, stream } from "./lib/api";
+import "./App.css";
 
 export default function App() {
   const [q, setQ] = useState("");
@@ -9,12 +10,20 @@ export default function App() {
   const [loading, setLoading] = useState<"idle" | "ask" | "stream">("idle");
   const stopRef = useRef<(() => void) | null>(null);
 
+  // Keep the answer panel scrolled to bottom while tokens stream in.
+  const answerRef = useRef<HTMLPreElement | null>(null);
+  useEffect(() => {
+    if (loading === "stream" && answerRef.current) {
+      answerRef.current.scrollTop = answerRef.current.scrollHeight;
+    }
+  }, [answer, loading]);
+
   async function onAsk() {
     setLoading("ask");
     setAnswer("");
     setSources([]);
     setLatency(null);
-    
+
     try {
       const res = await ask(q);
       setAnswer(res.answer);
@@ -32,25 +41,22 @@ export default function App() {
     setAnswer("");
     setSources([]);
     setLatency(null);
-    
+
+    // NOTE: stream() is your existing client that talks to POST /stream
     stopRef.current = stream(q, {
       onToken: (t) => setAnswer((prev) => prev + t),
       onMeta: (m) => {
-        // Handle citations from streaming (they come as citation objects)
-        if (m.citations) {
+        // If the server emits a one-off "meta" frame with citations
+        if (m?.citations) {
           const sourceNames = m.citations.map((c: any) => c.title || c.url);
           setSources(sourceNames);
-        }
-        // Handle other meta information
-        if (m.status) {
-          console.log("Stream status:", m.status);
         }
       },
       onDone: () => setLoading("idle"),
       onError: () => {
         setAnswer((prev) => prev + "\n[stream error]");
         setLoading("idle");
-      }
+      },
     });
   }
 
@@ -59,61 +65,78 @@ export default function App() {
     setLoading("idle");
   }
 
+  function onCopy() {
+    if (!answer) return;
+    navigator.clipboard?.writeText(answer);
+  }
+
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", fontFamily: "system-ui" }}>
-      <h1>RAG Job Doc Assistant</h1>
-      
-      <textarea
-        rows={4}
-        style={{ width: "100%", padding: 12 }}
-        placeholder="Ask something about your documents…"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-      
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-        <button onClick={onAsk} disabled={!q || loading !== "idle"}>
-          Ask
-        </button>
-        {loading !== "stream" ? (
-          <button onClick={onStream} disabled={!q}>
-            Stream (SSE)
+    <div id="root">
+      <div className="app-card">
+        <header>
+          <h1 className="app-title">RAG Job Doc Assistant</h1>
+          <p className="app-subtitle">
+            Ask questions about your documents. Choose <b>Ask</b> or <b>Stream</b>.
+          </p>
+        </header>
+
+        <textarea
+          className="app-textarea"
+          rows={5}
+          placeholder="Ask something…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+
+        <div className="actions-row">
+          <button
+            onClick={onAsk}
+            disabled={!q || loading !== "idle"}
+            className="btn btn--primary"
+          >
+            {loading === "ask" ? <span className="spinner" /> : "Ask"}
           </button>
+
+          {loading !== "stream" ? (
+            <button
+              onClick={onStream}
+              disabled={!q}
+              className="btn btn--secondary"
+            >
+              Stream
+            </button>
+          ) : (
+            <button onClick={onStop} className="btn btn--stop">
+              Stop
+            </button>
+          )}
+
+          {latency && <span className="chip">Response: {latency.toFixed(0)}ms</span>}
+        </div>
+
+        <div className="section-header">
+          <h3 className="section-title">Answer</h3>
+          <button
+            onClick={onCopy}
+            disabled={!answer}
+            className={`icon-btn ${!answer ? "icon-btn--disabled" : ""}`}
+          >
+            ⧉ Copy
+          </button>
+        </div>
+        <pre className="answer-box">{answer || "—"}</pre>
+
+        <h4 className="section-title" style={{ marginTop: "12px" }}>Sources</h4>
+        {sources.length === 0 ? (
+          <p className="muted">No sources yet.</p>
         ) : (
-          <button onClick={onStop}>Stop</button>
+          <div className="badge-wrap">
+            {sources.map((s, i) => (
+              <span key={i} className="badge">{s}</span>
+            ))}
+          </div>
         )}
       </div>
-
-      <h3 style={{ marginTop: 20 }}>Answer</h3>
-      <pre style={{ 
-        whiteSpace: "pre-wrap", 
-        background: "#f6f6f6", 
-        padding: 12, 
-        borderRadius: 8 
-      }}>
-        {answer || "—"}
-      </pre>
-
-      {latency && (
-        <p style={{ color: "#666", fontSize: "0.9em", marginTop: 8 }}>
-          Response time: {latency.toFixed(0)}ms
-        </p>
-      )}
-
-      {sources.length > 0 && (
-        <>
-          <h4>Sources</h4>
-          <ul>
-            {sources.map((source, i) => (
-              <li key={i}>
-                <span style={{ fontFamily: "monospace", background: "#f0f0f0", padding: "2px 6px", borderRadius: 3 }}>
-                  {source}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
     </div>
   );
 }

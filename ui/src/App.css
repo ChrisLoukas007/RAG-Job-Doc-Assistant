@@ -1,10 +1,31 @@
+/* ---------- Base container from Vite template (kept) ---------- */
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+
+  /* Center the entire app vertically and horizontally */
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Soft background to draw focus to the center card */
+html, body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color: #111827;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,.18), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
+/* ---------- Logo demo styles (kept) ---------- */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -17,26 +38,204 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
-
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
-
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
-.card {
-  padding: 2em;
+/* ---------- Old template utilities (kept) ---------- */
+.card { padding: 2em; }
+.read-the-docs { color: #888; }
+
+/* =======================================================================
+   NEW: App UI styles (you can gradually switch from inline styles to these)
+   ======================================================================= */
+
+/* Centered card the app lives in */
+.app-card {
+  width: min(920px, 94vw);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  padding: 22px 22px 18px;
+  text-align: left; /* content left, page-level header can remain centered */
 }
 
-.read-the-docs {
-  color: #888;
+/* App header */
+.app-title {
+  margin: 0;
+  font-size: clamp(22px, 2.2vw, 28px);
+  letter-spacing: .2px;
+  text-align: center;
+}
+.app-subtitle {
+  margin: 6px 0 0 0;
+  color: #666;
+  text-align: center;
+}
+
+/* Input area */
+.app-textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 14px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #fafafa;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+/* Works even if you don't add the class; targets all textareas */
+textarea:focus,
+.app-textarea:focus {
+  border-color: #c7d2fe; /* indigo-200 */
+  box-shadow: 0 0 0 4px rgba(99,102,241,.15);
+  background: #ffffff;
+}
+
+/* Actions row (Ask/Stream/Stop + latency chip) */
+.actions-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn {
+  appearance: none;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .05s ease, opacity .2s ease, box-shadow .2s ease;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn--primary {
+  color: #fff;
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%); /* indigo */
+}
+.btn--secondary {
+  color: #273;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  border: 1px solid #dfe3ff;
+}
+.btn--stop {
+  color: #7f1d1d;
+  background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fecaca;
+}
+
+/* Tiny chip (for latency display) */
+.chip {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #555;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #eee;
+}
+
+/* Section headers and controls (e.g., "Answer" + copy button) */
+.section-header {
+  margin-top: 16px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.section-title {
+  margin: 0;
+}
+
+/* Answer panel */
+.answer-box {
+  white-space: pre-wrap;
+  background: #0b10201a;                   /* faint indigo-tinted background */
+  border: 1px solid #e6e8f0;
+  padding: 14px;
+  border-radius: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  max-height: 360px;
+  overflow: auto;
+}
+
+/* Sources as badges */
+.badge-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  color: #3730a3;
+  font-size: 13px;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.muted { color: #666; margin-top: 6px; }
+
+/* Small icon-like button (e.g., Copy) */
+.icon-btn {
+  appearance: none;
+  border: none;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.icon-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Spinner used inside the Ask button while loading */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: -2px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .app-card { padding: 18px 16px 16px; }
+  .actions-row { gap: 8px; }
+  .btn { width: auto; }
 }
