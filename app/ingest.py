@@ -51,7 +51,7 @@ def build_index(raw_dir: str, index_dir: str, embedding_model: str):
     # Return number of chunks created for monitoring
     return len(chunks)
 
-# Only run when script is executed directly (not imported)
+# Only run when script is executed directly
 if __name__ == "__main__":
     # Load environment variables from .env file
     from dotenv import load_dotenv; load_dotenv()

@@ -21,3 +21,6 @@ data/logs/
 # Model caches (just in case)
 .cache/
 huggingface/
+
+
+mlruns/
