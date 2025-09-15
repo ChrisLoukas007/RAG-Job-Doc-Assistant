@@ -1,0 +1,72 @@
+# data/skills.yaml
+skills:
+  - name: python
+    aliases: [py, python3]
+  - name: fastapi
+    aliases: []
+  - name: langchain
+    aliases: [rag, retrieval-augmented generation]
+  - name: llm
+    aliases: [large language model, gpt, llama, generative ai, genai]
+  - name: embeddings
+    aliases: [sentence-transformers, bge, vector embeddings]
+  - name: faiss
+    aliases: [vector store]
+  - name: mlflow
+    aliases: [experiment tracking]
+  - name: docker
+    aliases: [containerization, containers]
+  - name: kubernetes
+    aliases: [k8s]
+  - name: aws
+    aliases: [amazon web services, s3, lambda, ecs, eks]
+  - name: azure
+    aliases: [ms azure]
+  - name: pytorch
+    aliases: [torch]
+  - name: tensorflow
+    aliases: [tf, keras]
+  - name: sql
+    aliases: [postgres, mysql, sqlite]
+  - name: typescript
+    aliases: [ts]
+  - name: javascript
+    aliases: [js, nodejs, node]
+  - name: react
+    aliases: [reactjs]  
+  - name: html
+    aliases: []
+  - name: css 
+    aliases: []     
+  - name: git
+    aliases: [github, gitlab, bitbucket]
+  - name: ci/cd
+    aliases: [continuous integration, continuous deployment, jenkins, github actions, gitlab ci]
+  - name: agile
+    aliases: [scrum, kanban]
+  - name: data engineering
+    aliases: [etl, data pipelines, airflow, dbt]
+  - name: data science
+    aliases: [statistics, r, jupyter, pandas, numpy, matplotlib, seaborn]
+  - name: devops
+    aliases: [infrastructure as code, terraform, ansible, cloudformation]
+  - name: cybersecurity
+    aliases: [infosec, security]
+  - name: networking
+    aliases: [tcp/ip, dns, dhcp, vpn]
+  - name: system administration
+    aliases: [linux, bash, shell scripting]
+  - name: project management
+    aliases: [pmp, prince2]
+  - name: communication
+    aliases: [presentations, technical writing]
+  - name: problem-solving
+    aliases: [analytical thinking, critical thinking]
+  - name: teamwork
+    aliases: [collaboration, interpersonal skills]
+  - name: leadership
+    aliases: [management, mentoring]
+  - name: time management
+    aliases: [productivity, organization]
+  - name: creativity
+    aliases: [innovation, design thinking]  

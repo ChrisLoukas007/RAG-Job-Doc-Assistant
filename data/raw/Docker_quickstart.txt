@@ -1,2 +1,0 @@
-Image = template; Container = running instance. Use volumes to persist indexes/logs.
-Keep image lean; python:3.11-slim is a good base.
