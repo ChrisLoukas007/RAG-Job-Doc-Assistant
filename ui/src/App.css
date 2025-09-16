@@ -218,6 +218,16 @@ textarea:focus,
   cursor: not-allowed;
 }
 
+.app-textarea {
+  color: #111;            /* make text visible */
+  background: #fff;       /* ensure contrast */
+  caret-color: #111;      /* visible cursor */
+  opacity: 1;
+  font-size: 16px;
+}
+.app-textarea::placeholder { color: #888; }
+
+
 /* Spinner used inside the Ask button while loading */
 .spinner {
   display: inline-block;
