@@ -184,7 +184,7 @@ async def main():
     print(f"Detailed results saved to: {preds_out}")
     print()
 
-    # STEP 8: (Optional) Log everything to MLflow for experiment tracking
+    # STEP 8:Log everything to MLflow for experiment tracking
     if USE_MLFLOW and mlflow is not None:
         print("Logging to MLflow for experiment tracking...")
 
