@@ -1,0 +1,82 @@
+# IMPORTS - Getting all the AI tools we need (kept from rag_chain.py)
+import os
+from typing import Dict, Any, AsyncIterator
+
+# LangChain imports - AI framework components
+from langchain_core.runnables import RunnablePassthrough, RunnableMap
+from langchain_core.output_parsers import StrOutputParser  # for parsing AI output
+from langchain_core.messages import BaseMessage            # for handling AI responses
+
+# App-local imports
+from ..core.config import EMBEDDING_MODEL, INDEX_DIR, LLM_PROVIDER, OPENAI_MODEL, OLLAMA_MODEL, OLLAMA_BASE_URL
+from ..providers.vector_faiss import load_vs
+from ..providers.llm_openai import get_openai_llm
+from ..providers.llm_ollama import get_ollama_llm
+from .prompts import PROMPT
+
+# DOCUMENT FORMATTER - Format retrieved documents into readable context string with source references (kept)
+def format_docs(docs):
+    """    
+    Input: [doc1, doc2, doc3]
+    Output: "[1] file1.pdf\nContent here...\n\n[2] file2.pdf\nMore content..."
+    """
+    formatted_parts = []
+    for i, doc in enumerate(docs):
+        source = doc.metadata.get('source', 'unknown')
+        section = f"[{i+1}] {source}\n{doc.page_content}"
+        formatted_parts.append(section)
+    return "\n\n".join(formatted_parts)
+
+# CONTEXT COMBINER - Combine user question with formatted document context (kept)
+def combine_context(x: Dict[str, Any]) -> Dict[str, str]:
+    """   
+    Input: {"question": "How do I login?", "docs": [doc1, doc2, doc3]}
+    Output: {"question": "How do I login?", "context": "[1] manual.pdf\nClick login..."}
+    """
+    return {
+        "question": x["question"],
+        "context": format_docs(x["docs"])  # Format documents into readable context
+    }
+
+# CHAIN BUILDER - Create the complete RAG chain: retrieval + generation (kept logic, modularized LLM)
+def make_chain(index_dir: str = INDEX_DIR, embedding_model: str = EMBEDDING_MODEL, llm_provider: str = LLM_PROVIDER):
+    # Step 1: Load the knowledge database (filing cabinet)
+    vs = load_vs(index_dir, embedding_model)
+
+    # Step 2: Create a searcher that finds the 4 most relevant documents
+    retriever = vs.as_retriever(search_kwargs={"k": 4})
+
+    # Step 3: Choose which AI brain to use (kept, now via providers)
+    if llm_provider == "openai":
+        llm = get_openai_llm(default_model=os.getenv("OPENAI_MODEL", OPENAI_MODEL), temperature=0)
+    else:
+        llm = get_ollama_llm(
+            model=os.getenv("OLLAMA_MODEL", OLLAMA_MODEL),
+            base_url=os.getenv("OLLAMA_BASE_URL", OLLAMA_BASE_URL),
+            temperature=0,
+        )
+
+    # Step 4: Build the complete pipeline (kept)
+    chain = (
+        RunnableMap({
+            "question": RunnablePassthrough(),  # Pass the question through unchanged
+            "docs": retriever                   # Search for relevant documents
+        })
+        | combine_context                      # Combine question and documents into AI-readable format
+        | PROMPT                               # Apply the prompt template (give AI its instructions)
+        | llm                                  # Let the AI generate the final answer
+        | StrOutputParser()                    # Ensure output is plain text
+    )
+    return chain, retriever
+
+# STREAMING FUNCTION - Real-time answer generation (kept)
+async def stream_chain_answer(chain, question: str) -> AsyncIterator[str]:
+    """
+    Stream the model's answer token-by-token.
+    """
+    async for event in chain.astream_events(question, version="v1"):
+        if event["event"] == "on_chat_model_stream":
+            chunk = event["data"]["chunk"]
+            piece = getattr(chunk, "content", "") or ""
+            if piece:
+                yield piece
