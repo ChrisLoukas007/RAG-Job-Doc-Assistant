@@ -7,7 +7,7 @@ from .core.config import CORS_ORIGINS, INDEX_DIR, EMBEDDING_MODEL, LLM_PROVIDER
 from .api.routes import router
 from .pipelines.rag import make_chain
 
-# App startup / lifespan - Preparing the RAG chain when server starts. (kept intent)
+# App startup / lifespan - Preparing the RAG chain when server starts. 
 @asynccontextmanager
 async def lifespan(app: FastAPI): 
     # Build chain once, share via app.state
@@ -16,10 +16,10 @@ async def lifespan(app: FastAPI):
     app.state.retriever = retriever  # The document retriever to find relevant info
     yield  # app runs
 
-# Create the FastAPI app with startup/shutdown management (kept intent)
+# Create the FastAPI app with startup/shutdown management 
 app = FastAPI(title="RAG Helpdesk API", lifespan=lifespan)
 
-# CORS - allow browsers talk to our api from these origins (kept)
+# CORS - allow browsers talk to our api from these origins 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -28,5 +28,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# HTTP layer only (kept) — mount routes
+# HTTP layer only  — mount routes
 app.include_router(router)

@@ -1,4 +1,4 @@
-# DATA MODELS - Defining what data looks like (kept from your main.py)
+# DATA MODELS - Defining what data looks like
 from pydantic import BaseModel
 from typing import List
 

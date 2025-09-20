@@ -1,11 +1,10 @@
-# IMPORTS - Getting all the AI tools we need (kept from rag_chain.py)
+# IMPORTS - Getting all the AI tools we need
 import os
 from typing import Dict, Any, AsyncIterator
 
 # LangChain imports - AI framework components
-from langchain_core.runnables import RunnablePassthrough, RunnableMap
-from langchain_core.output_parsers import StrOutputParser  # for parsing AI output
-from langchain_core.messages import BaseMessage            # for handling AI responses
+from langchain_core.runnables import RunnablePassthrough, RunnableMap # for building AI pipelines , RunnablePassthrough is used to pass the question through unchanged, RunnableMap is used to create a mapping of inputs to runnables
+from langchain_core.output_parsers import StrOutputParser  # for parsing AI output as plain text
 
 # App-local imports
 from ..core.config import EMBEDDING_MODEL, INDEX_DIR, LLM_PROVIDER, OPENAI_MODEL, OLLAMA_MODEL, OLLAMA_BASE_URL
@@ -14,7 +13,7 @@ from ..providers.llm_openai import get_openai_llm
 from ..providers.llm_ollama import get_ollama_llm
 from .prompts import PROMPT
 
-# DOCUMENT FORMATTER - Format retrieved documents into readable context string with source references (kept)
+# DOCUMENT FORMATTER - Format retrieved documents into readable context string with source references
 def format_docs(docs):
     """    
     Input: [doc1, doc2, doc3]
@@ -27,7 +26,7 @@ def format_docs(docs):
         formatted_parts.append(section)
     return "\n\n".join(formatted_parts)
 
-# CONTEXT COMBINER - Combine user question with formatted document context (kept)
+# CONTEXT COMBINER - Combine user question with formatted document context
 def combine_context(x: Dict[str, Any]) -> Dict[str, str]:
     """   
     Input: {"question": "How do I login?", "docs": [doc1, doc2, doc3]}
@@ -38,7 +37,7 @@ def combine_context(x: Dict[str, Any]) -> Dict[str, str]:
         "context": format_docs(x["docs"])  # Format documents into readable context
     }
 
-# CHAIN BUILDER - Create the complete RAG chain: retrieval + generation (kept logic, modularized LLM)
+# CHAIN BUILDER - Create the complete RAG chain: retrieval + generation 
 def make_chain(index_dir: str = INDEX_DIR, embedding_model: str = EMBEDDING_MODEL, llm_provider: str = LLM_PROVIDER):
     # Step 1: Load the knowledge database (filing cabinet)
     vs = load_vs(index_dir, embedding_model)
@@ -46,7 +45,7 @@ def make_chain(index_dir: str = INDEX_DIR, embedding_model: str = EMBEDDING_MODE
     # Step 2: Create a searcher that finds the 4 most relevant documents
     retriever = vs.as_retriever(search_kwargs={"k": 4})
 
-    # Step 3: Choose which AI brain to use (kept, now via providers)
+    # Step 3: Choose which AI brain to use - OpenAI or Ollama
     if llm_provider == "openai":
         llm = get_openai_llm(default_model=os.getenv("OPENAI_MODEL", OPENAI_MODEL), temperature=0)
     else:
@@ -56,7 +55,8 @@ def make_chain(index_dir: str = INDEX_DIR, embedding_model: str = EMBEDDING_MODE
             temperature=0,
         )
 
-    # Step 4: Build the complete pipeline (kept)
+    # Step 4: Build the complete pipeline - Language model + prompt + retriever + context combiner
+    # The chain processes the question, retrieves documents, formats context, applies the prompt, and generates an answer
     chain = (
         RunnableMap({
             "question": RunnablePassthrough(),  # Pass the question through unchanged
@@ -69,7 +69,7 @@ def make_chain(index_dir: str = INDEX_DIR, embedding_model: str = EMBEDDING_MODE
     )
     return chain, retriever
 
-# STREAMING FUNCTION - Real-time answer generation (kept)
+# STREAMING FUNCTION - Real-time answer generation (token-by-token)
 async def stream_chain_answer(chain, question: str) -> AsyncIterator[str]:
     """
     Stream the model's answer token-by-token.

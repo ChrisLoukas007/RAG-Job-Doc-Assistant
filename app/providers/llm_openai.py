@@ -1,7 +1,6 @@
 # adapters/llm_openai.py — thin wrapper around OpenAI chat models
-# (keeps your "Choose which AI brain to use" split, now cleanly isolated)
 import os
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI # OpenAI chat model wrapper
 
 def get_openai_llm(default_model: str | None = None, temperature: float = 0):
     model = default_model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")

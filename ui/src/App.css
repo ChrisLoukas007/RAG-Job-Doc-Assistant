@@ -1,4 +1,4 @@
-/* ---------- Base container from Vite template (kept) ---------- */
+/* ---------- Base container from Vite template  ---------- */
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -25,7 +25,7 @@ body {
     linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
 }
 
-/* ---------- Logo demo styles (kept) ---------- */
+/* ---------- Logo demo styles  ---------- */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -48,7 +48,7 @@ body {
   }
 }
 
-/* ---------- Old template utilities (kept) ---------- */
+/* ---------- Old template utilities  ---------- */
 .card { padding: 2em; }
 .read-the-docs { color: #888; }
 
