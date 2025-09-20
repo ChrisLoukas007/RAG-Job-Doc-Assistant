@@ -9,7 +9,7 @@ from .pipelines.rag import make_chain
 
 # App startup / lifespan - Preparing the RAG chain when server starts. (kept intent)
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI): 
     # Build chain once, share via app.state
     chain, retriever = make_chain(INDEX_DIR, EMBEDDING_MODEL, LLM_PROVIDER)  # This connects to the knowledge database and sets up the AI
     app.state.chain = chain  # The main RAG chain for answering questions
