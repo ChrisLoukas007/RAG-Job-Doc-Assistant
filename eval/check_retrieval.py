@@ -1,17 +1,18 @@
-# eval/check_retrieval.py
-from pathlib import Path
-import os, textwrap
+import os
+import textwrap
 
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 INDEX_DIR = os.getenv("INDEX_DIR", "data/index")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-TOP_K = int(os.getenv("RETRIEVER_TOP_K", "8"))
+TOP_K = int(os.getenv("RETRIEVER_TOP_K", "3"))
+
 
 def load_vs():
     emb = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
     return FAISS.load_local(INDEX_DIR, emb, allow_dangerous_deserialization=True)
+
 
 def show_results(vs, q: str, k: int = TOP_K):
     print(f"\nQ: {q}\nTop-{k} retrieved chunks:")
@@ -20,6 +21,7 @@ def show_results(vs, q: str, k: int = TOP_K):
         src = d.metadata.get("source", "unknown")
         snippet = textwrap.shorten(d.page_content.replace("\n", " "), width=220)
         print(f"{i:>2}. score={score:.4f} | {src}\n    {snippet}")
+
 
 if __name__ == "__main__":
     vs = load_vs()

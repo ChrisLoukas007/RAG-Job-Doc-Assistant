@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 from typing import List
+
 from dotenv import load_dotenv
 
 load_dotenv()  # Read .env file to get secret keys and settings
@@ -15,10 +16,8 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 CORS_ORIGINS: List[str] = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173"
+    "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
 
 # Create logs folder if it doesn't exist (kept behavior)
 Path(LOGS_DIR).mkdir(parents=True, exist_ok=True)
-# Note: Other configuration settings can be added here as needed

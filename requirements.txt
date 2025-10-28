@@ -16,3 +16,4 @@ langchain-huggingface
 sentence-transformers
 transformers
 langchain-ollama
+mlflow
