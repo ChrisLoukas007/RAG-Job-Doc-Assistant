@@ -1,4 +1,5 @@
 # HTTP layer only - The FastAPI routes (endpoints) for the RAG API.
+import asyncio
 import json
 import re  # for pattern matching in text
 import time
@@ -100,8 +101,8 @@ async def query(
     t0 = time.time()  # Start timing how long this takes
     try:
         # 1) Ask the AI chain for an answer
-        raw = await chain.ainvoke(
-            payload.question
+        raw = await asyncio.to_thread(
+            chain.invoke, payload.question
         )  # Get raw response from the AI chain
         answer_text: str = coerce_to_text(raw)  # Convert response to plain text
 
@@ -115,7 +116,9 @@ async def query(
 
         # 3) If no sources found in answer, get them from search results instead
         if not parsed:
-            docs = await retriever.aget_relevant_documents(payload.question)
+            docs = await retriever.ainvoke(
+                payload.question
+            )  # Get documents used for this question
             for d in docs:
                 src = d.metadata.get("source", "unknown")
                 parsed.append(Path(src).name)  # Just the filename, not full path
@@ -167,7 +170,7 @@ async def stream(
 
             # Send source citations early (before the answer starts)
             try:
-                docs = await retriever.aget_relevant_documents(q)
+                docs = await retriever.ainvoke(q)
                 citations = [
                     {
                         "title": Path(d.metadata.get("source", "unknown")).name,

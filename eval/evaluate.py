@@ -18,21 +18,11 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import httpx
+import mlflow
 import numpy as np
 from httpx import HTTPError
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
-# SETUP: Import MLflow if available (MLflow = experiment tracking tool)
-try:
-    import mlflow  # This tool helps track my AI experiments
-
-    USE_MLFLOW = True
-    print("✅ MLflow found - will track experiments")
-except Exception:
-    mlflow = None
-    USE_MLFLOW = False
-    print("⚠️ MLflow not installed - will skip experiment tracking")
 
 # SETUP: Load the AI model that converts text to numbers (embeddings)
 DEFAULT_EMBEDDING_MODEL = os.getenv(
@@ -194,54 +184,50 @@ async def main():
     print()
 
     # STEP 8:Log everything to MLflow for experiment tracking
-    if USE_MLFLOW and mlflow is not None:
-        print("Logging to MLflow for experiment tracking...")
 
-        # MLflow helps you track different versions of my AI and compare them
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns"))
-        mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "rag-eval"))
-        run_name = os.getenv("RUN_NAME", "baseline")
+    # MLflow helps you track different versions of my AI and compare them
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns"))
+    mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "rag-eval"))
+    run_name = os.getenv("RUN_NAME", "baseline")
 
-        with mlflow.start_run(run_name=run_name):
-            # Log configuration (what settings you used for this experiment)
-            mlflow.log_params(
-                {
-                    "embedding_model": DEFAULT_EMBEDDING_MODEL,
-                    "retriever_top_k": os.getenv("RETRIEVER_TOP_K", "default"),
-                    "chunk_size": os.getenv("CHUNK_SIZE", "default"),
-                    "chunk_overlap": os.getenv("CHUNK_OVERLAP", "default"),
-                    "llm_provider": os.getenv("LLM_PROVIDER", "my-llm"),
-                    "llm_model": os.getenv("LLM_MODEL", "model-name"),
-                    "temperature": os.getenv("TEMPERATURE", "default"),
-                }
-            )
+    with mlflow.start_run(run_name=run_name):
+        # Log configuration (what settings you used for this experiment)
+        mlflow.log_params(
+            {
+                "embedding_model": DEFAULT_EMBEDDING_MODEL,
+                "retriever_top_k": os.getenv("RETRIEVER_TOP_K", "default"),
+                "chunk_size": os.getenv("CHUNK_SIZE", "default"),
+                "chunk_overlap": os.getenv("CHUNK_OVERLAP", "default"),
+                "llm_provider": os.getenv("LLM_PROVIDER", "my-llm"),
+                "llm_model": os.getenv("LLM_MODEL", "model-name"),
+                "temperature": os.getenv("TEMPERATURE", "default"),
+            }
+        )
 
-            # Log performance metrics (how well my AI performed)
-            mlflow.log_metric("average_similarity", float(mean_sim))
-            mlflow.log_metric("median_similarity", float(median_sim))
-            mlflow.log_metric("percent_good_answers", float(pct_above_0_7 * 100))
-            mlflow.log_metric("num_test_questions", int(len(gold)))
-            mlflow.log_metric("avg_response_time_ms", float(avg_latency_ms))
+        # Log performance metrics (how well my AI performed)
+        mlflow.log_metric("average_similarity", float(mean_sim))
+        mlflow.log_metric("median_similarity", float(median_sim))
+        mlflow.log_metric("percent_good_answers", float(pct_above_0_7 * 100))
+        mlflow.log_metric("num_test_questions", int(len(gold)))
+        mlflow.log_metric("avg_response_time_ms", float(avg_latency_ms))
 
-            # Log metadata (extra info about this experiment)
-            try:
-                ds_hash = hashlib.md5(ds_path.read_bytes()).hexdigest()
-            except FileNotFoundError:
-                ds_hash = "file_missing"
+        # Log metadata (extra info about this experiment)
+        try:
+            ds_hash = hashlib.md5(ds_path.read_bytes()).hexdigest()
+        except FileNotFoundError:
+            ds_hash = "file_missing"
 
-            mlflow.set_tag("dataset_path", str(ds_path))
-            mlflow.set_tag("dataset_checksum", ds_hash)
-            mlflow.set_tag("query_url", query_url)
+        mlflow.set_tag("dataset_path", str(ds_path))
+        mlflow.set_tag("dataset_checksum", ds_hash)
+        mlflow.set_tag("query_url", query_url)
 
-            # Save files to MLflow (so you can download them later)
-            if ds_path.exists():
-                mlflow.log_artifact(str(ds_path), artifact_path="test_data")
-            mlflow.log_artifact(str(preds_out), artifact_path="results")
+        # Save files to MLflow (so you can download them later)
+        if ds_path.exists():
+            mlflow.log_artifact(str(ds_path), artifact_path="test_data")
+        mlflow.log_artifact(str(preds_out), artifact_path="results")
 
         print("Results logged to MLflow!")
         print("View results at: http://localhost:5000 (run 'mlflow ui' to start)")
-    else:
-        print("MLflow not available - skipping experiment tracking")
 
     print()
     print("Evaluation complete!")

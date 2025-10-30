@@ -17,3 +17,6 @@ sentence-transformers
 transformers
 langchain-ollama
 mlflow
+pypdf
+arize-phoenix
+openinference-instrumentation-langchain
